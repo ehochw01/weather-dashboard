@@ -41,10 +41,10 @@ function getWeatherApi(requestUrl) {
             weatherData = data;
             console.log("data:");
             console.log(data);
-            if (data.message == "city no found") {
+            if (data.message != "city not found") {
                 renderSearchDatatoPage();
             } else {
-                console.log("city no found");
+                console.log("city not found");
             }
         })
         // .catch(error => {
@@ -54,7 +54,6 @@ function getWeatherApi(requestUrl) {
 
 function renderSearchDatatoPage() {
     console.log("renderSearchDatatoPage()");
-    console.log(JSON.parse(weatherData));
 }
 
 searchButton.addEventListener('click', searchOnClick);
