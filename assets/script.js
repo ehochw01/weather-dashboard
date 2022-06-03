@@ -12,22 +12,77 @@ WHEN I click on a city in the search history
 THEN I am again presented with current and future conditions for that city
 */
 
+var previousCities = localStorage.getItem("previousCities");
+const SearchHistoryLimit = 10;
+
+if (previousCities != null) {
+    var prevCityArr = JSON.parse(previousCities);
+    renderSearchHistory();
+} else {
+    var prevCityArr = [];
+}
+
 const searchButton = document.querySelector("#search-btn");
 var weatherData = {};
 const searchOnClick = function(event) {
     console.log("searchOnClick");
     event.preventDefault();
-
-    let city = document.querySelector("#city-search-input").value;
-    console.log(city);
-    getSearchResults(city);
+    let cityEl = document.querySelector("#city-search-input");
+    let city = cityEl.value;
+    // clear input field when search is clicked
+    cityEl.value = '';
+    if (city == "") {
+        alert("Please Enter a City");
+        return;
+    }
+   
+    // standardize the capitalization of the city
+    city = capitalize(city);
+    // getSearchResults(city);
     // save search history to local storage
+    updateSearchHistory(city);
 }
+
+function renderSearchHistory() {
+    console.log("renderSearchHistory()");
+}
+
+function updateSearchHistory(city) {
+    console.log("updateSearchHistory()");
+    // remove city from prevCityArr if it already exists
+    let filteredCityArr = prevCityArr.filter(function(c) {return c !== city});
+    prevCityArr = filteredCityArr;
+    // add city to the end of the prevCityArr
+    prevCityArr.push(city);
+    // only save recent search history
+    while(prevCityArr.length > SearchHistoryLimit) {
+        prevCityArr.shift();
+    }
+    localStorage.setItem("previousCities", JSON.stringify(prevCityArr));
+    console.log(prevCityArr);
+}
+
+function capitalize(str) {
+    const stringArray = str.toLowerCase().split("");
+    let capitalizeChar = true;
+    for (let i=0; i<stringArray.length; i++) {
+        if(capitalizeChar) {
+            stringArray[i] = stringArray[i].toUpperCase();
+            capitalizeChar = false;
+        }
+            if (stringArray[i] == ' ') {
+            capitalizeChar = true;
+        }
+    }
+    return stringArray.join("");
+}
+
+
 
 function getSearchResults(city) {
     console.log("getSearchResults()")
     const apiKey = '233b06be3bdfee31043f3f96e5745593';
-    var requestUrl = 'https://api.openweathermap.org/data/2.5/weather?q='+ city + '&units=imperial&appid=' + apiKey;
+    var requestUrl = 'https://api.openweathermap.org/data/2.5/weather?q='+ encodeURIComponent(city) + '&units=imperial&appid=' + apiKey;
     console.log(requestUrl);
     getWeatherApi(requestUrl);
 }
