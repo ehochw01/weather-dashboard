@@ -17,6 +17,7 @@ const SearchHistoryLimit = 10;
 
 if (previousCities != null) {
     var prevCityArr = JSON.parse(previousCities);
+    console.log(prevCityArr);
     renderSearchHistory();
 } else {
     var prevCityArr = [];
@@ -45,6 +46,23 @@ const searchOnClick = function(event) {
 
 function renderSearchHistory() {
     console.log("renderSearchHistory()");
+    let historyEl = document.querySelector("#history-buttons");
+    while(historyEl.firstChild){
+        historyEl.removeChild(historyEl.firstChild);
+    }
+    for (let i = prevCityArr.length - 1; i >= 0; i--) {
+        let button = document.createElement('button');
+        button.setAttribute("class", "btn btn-secondary btn-block");
+        button.setAttribute("type", "button");
+        button.innerHTML = prevCityArr[i];
+        historyEl.appendChild(button);
+        button.onclick = function () {
+            let city = button.innerHTML;
+            updateSearchHistory(city);
+            console.log(city);
+        }
+    }
+
 }
 
 function updateSearchHistory(city) {
@@ -59,6 +77,7 @@ function updateSearchHistory(city) {
         prevCityArr.shift();
     }
     localStorage.setItem("previousCities", JSON.stringify(prevCityArr));
+    renderSearchHistory();
     console.log(prevCityArr);
 }
 
