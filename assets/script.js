@@ -137,7 +137,8 @@ function renderCurrentWeather(weatherData, city) {
     currentEl.setAttribute("class", "card d-flex");
     const currentElbody = document.querySelector("#current-card-body");
     const iconCode = weatherData.current.weather[0].icon;
-    currentElbody.children[0].innerHTML = city + " " + moment().format("l");
+    console.log(weatherData);
+    currentElbody.children[0].innerHTML = city + " " + moment.unix(weatherData.daily[0].dt).format("l");
     currentElbody.children[0].innerHTML += `  <img src="http://openweathermap.org/img/wn/${iconCode}@2x.png" alt="Weather Icon">`;
     for (let i = 1; i < currentElbody.children.length; i++) {
         switch(i) {
@@ -171,6 +172,7 @@ function renderForecast(weatherData){
     while(cardGroupEl.firstChild){
         cardGroupEl.removeChild(cardGroupEl.firstChild);
     }
+    console.log(weatherData);
     for(let i=1; i < 6; i++) {
         const date = moment.unix(weatherData[i].dt).format("l");
         const iconCode = weatherData[i].weather[0].icon;
