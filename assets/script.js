@@ -32,9 +32,6 @@ const searchOnClick = function(event) {
     event.preventDefault();
     let cityEl = document.querySelector("#city-search-input");
     let city = cityEl.value;
-    // clear input field when search is clicked
-    cityEl.value = '';
-    cityEl.setAttribute("placeholder", city);
     if (city == "") {
         alert("Please Enter a City");
         return;
@@ -44,7 +41,6 @@ const searchOnClick = function(event) {
     city = capitalize(city);
     getSearchResults(city);
     // save search history to local storage
-    updateSearchHistory(city);
 }
 
 function renderSearchHistory() {
@@ -72,7 +68,7 @@ function renderSearchHistory() {
             cityEl.value = '';
             cityEl.setAttribute("placeholder", city);
             getSearchResults(city);
-            updateSearchHistory(city);
+            // updateSearchHistory(city);
         }
     }
 
@@ -102,7 +98,7 @@ function capitalize(str) {
             stringArray[i] = stringArray[i].toUpperCase();
             capitalizeChar = false;
         }
-            if (stringArray[i] == ' ') {
+            if (stringArray[i] == ' ' || stringArray[i] == '.') {
             capitalizeChar = true;
         }
     }
@@ -114,10 +110,10 @@ function capitalize(str) {
 function getSearchResults(city) {
     console.log("getSearchResults()");
     const requestUrl = 'https://api.openweathermap.org/data/2.5/weather?q='+ encodeURIComponent(city) + '&units=imperial&appid=' + apiKey;
-    getWeatherApi(requestUrl);
+    getWeatherApi(requestUrl, city);
 }
 // use the weather request to get the latitude and longitude of a city
-function getWeatherApi(requestUrl) {
+function getWeatherApi(requestUrl, city) {
     fetch(requestUrl)
         .then(function (response) {
             return response.json();
@@ -125,11 +121,17 @@ function getWeatherApi(requestUrl) {
         .then(function (data) {
             console.log("data:");
             console.log(data);
-            if (data.message != "city not found") {
-                getOneCallApi(data.coord.lat, data.coord.lon, data.name);
+            let cityEl = document.querySelector("#city-search-input");
+            // clear input field when search is clicked
+            cityEl.value = '';
+            if (data.cod == "404") {
+                cityEl.setAttribute("placeholder", "Enter a City");
+                alert("city not found");
             } else {
-                console.log("city not found");
-            }
+                cityEl.setAttribute("placeholder", city);
+                updateSearchHistory(city);
+                getOneCallApi(data.coord.lat, data.coord.lon, city);
+            } 
         })
         // .catch(error => {
         //     console.log("query failed");
@@ -147,7 +149,7 @@ function getOneCallApi(lat, lon, city) {
         console.log("data:");
         console.log(data);
         if (data.message != "wrong latitude" && data.message != "wrong longitude") {
-            renderSearchDatatoPage(data, city);
+            renderCurrentWeather(data, city);
         } else {
             console.log(data.message);
         }
@@ -157,8 +159,8 @@ function getOneCallApi(lat, lon, city) {
     // });
 }
 
-function renderSearchDatatoPage(weatherData, city) {
-    console.log("renderSearchDatatoPage()");
+function renderCurrentWeather(weatherData, city) {
+    console.log("renderCurrentWeather()");
     const currentEl = document.querySelector("#current-card");
     currentEl.setAttribute("class", "card d-flex");
     const currentElbody = document.querySelector("#current-card-body");
@@ -187,6 +189,10 @@ function renderSearchDatatoPage(weatherData, city) {
     }
     uviEl = document.getElementById("uv-index");
     uviEl.innerHTML = `UV Index: <span class="badge ${color}">${uvi}</span>`;
+}
+
+function renderForecast(weatherData){
+    console.log("renderForecast()");
 }
 
 searchButton.addEventListener('click', searchOnClick);
