@@ -25,7 +25,6 @@ if (previousCities != null) {
 }
 
 const searchButton = document.querySelector("#search-btn");
-var weatherData = {};
 const searchOnClick = function(event) {
     hasSearched = true;
     console.log("searchOnClick");
@@ -66,6 +65,7 @@ function renderSearchHistory() {
         button.innerHTML = prevCityArr[i];
         historyEl.appendChild(button);
         button.onclick = function () {
+            hasSearched = true;
             let city = button.innerHTML;
             let cityEl = document.querySelector("#city-search-input");
             cityEl.value = '';
@@ -126,11 +126,10 @@ function getWeatherApi(requestUrl) {
             return response.json();
         })
         .then(function (data) {
-            weatherData = data;
             console.log("data:");
             console.log(data);
             if (data.message != "city not found") {
-                renderSearchDatatoPage();
+                renderSearchDatatoPage(data);
             } else {
                 console.log("city not found");
             }
@@ -140,9 +139,23 @@ function getWeatherApi(requestUrl) {
         // });
 }
 
-function renderSearchDatatoPage() {
+function renderSearchDatatoPage(weatherData) {
     console.log("renderSearchDatatoPage()");
     const currentElbody = document.querySelector("#current-card-body");
+    currentElbody.children[0].innerHTML = weatherData.name + " " + moment().format("l");
+    for (let i = 1; i < currentElbody.children.length; i++) {
+        switch(i) {
+            case 1:
+                currentElbody.children[i].innerHTML = "Temp: " + weatherData.main.temp + "°F";
+                break;
+            case 2:
+                currentElbody.children[i].innerHTML = "Wind: " + weatherData.wind.speed + " mph";
+                break;
+            case 3:
+                currentElbody.children[i].innerHTML = "Humidity: " + weatherData.main.humidity + "%";
+                break;
+        }
+    }
 }
 
 searchButton.addEventListener('click', searchOnClick);
