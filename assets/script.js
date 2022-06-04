@@ -15,6 +15,7 @@ THEN I am again presented with current and future conditions for that city
 var previousCities = localStorage.getItem("previousCities");
 var hasSearched = false;
 const SearchHistoryLimit = 11;
+const apiKey = '233b06be3bdfee31043f3f96e5745593';
 
 if (previousCities != null) {
     var prevCityArr = JSON.parse(previousCities);
@@ -111,15 +112,11 @@ function capitalize(str) {
 
 
 function getSearchResults(city) {
-    const currentEl = document.querySelector("#current-card");
-    currentEl.setAttribute("class", "card d-flex");
-    console.log("getSearchResults()")
-    const apiKey = '233b06be3bdfee31043f3f96e5745593';
-    var requestUrl = 'https://api.openweathermap.org/data/2.5/weather?q='+ encodeURIComponent(city) + '&units=imperial&appid=' + apiKey;
-    console.log(requestUrl);
+    console.log("getSearchResults()");
+    const requestUrl = 'https://api.openweathermap.org/data/2.5/weather?q='+ encodeURIComponent(city) + '&units=imperial&appid=' + apiKey;
     getWeatherApi(requestUrl);
 }
-
+// use the weather request to get the latitude and longitude of a city
 function getWeatherApi(requestUrl) {
     fetch(requestUrl)
         .then(function (response) {
@@ -129,7 +126,7 @@ function getWeatherApi(requestUrl) {
             console.log("data:");
             console.log(data);
             if (data.message != "city not found") {
-                renderSearchDatatoPage(data);
+                getOneCallApi(data.coord.lat, data.coord.lon, data.name);
             } else {
                 console.log("city not found");
             }
@@ -139,20 +136,43 @@ function getWeatherApi(requestUrl) {
         // });
 }
 
-function renderSearchDatatoPage(weatherData) {
+function getOneCallApi(lat, lon, city) {
+    console.log("lat: " + lat + " lon: " + lon);
+    const requestURL = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat + "&lon=" + lon + "&exclude=minutely,hourly&units=imperial&appid=" + apiKey;
+    fetch(requestURL)
+    .then(function (response) {
+        return response.json();
+    })
+    .then(function (data) {
+        console.log("data:");
+        console.log(data);
+        if (data.message != "wrong latitude" && data.message != "wrong longitude") {
+            renderSearchDatatoPage(data, city);
+        } else {
+            console.log(data.message);
+        }
+    })
+    // .catch(error => {
+    //     console.log("query failed");
+    // });
+}
+
+function renderSearchDatatoPage(weatherData, city) {
     console.log("renderSearchDatatoPage()");
+    const currentEl = document.querySelector("#current-card");
+    currentEl.setAttribute("class", "card d-flex");
     const currentElbody = document.querySelector("#current-card-body");
-    currentElbody.children[0].innerHTML = weatherData.name + " " + moment().format("l");
+    currentElbody.children[0].innerHTML = city + " " + moment().format("l");
     for (let i = 1; i < currentElbody.children.length; i++) {
         switch(i) {
             case 1:
-                currentElbody.children[i].innerHTML = "Temp: " + weatherData.main.temp + "°F";
+                currentElbody.children[i].innerHTML = "Temp: " + weatherData.current.temp + "°F";
                 break;
             case 2:
-                currentElbody.children[i].innerHTML = "Wind: " + weatherData.wind.speed + " mph";
+                currentElbody.children[i].innerHTML = "Wind: " + weatherData.current.wind_speed + " mph";
                 break;
             case 3:
-                currentElbody.children[i].innerHTML = "Humidity: " + weatherData.main.humidity + "%";
+                currentElbody.children[i].innerHTML = "Humidity: " + weatherData.current.humidity + "%";
                 break;
         }
     }
