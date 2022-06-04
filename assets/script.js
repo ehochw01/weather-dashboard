@@ -1,17 +1,3 @@
-/* 
-GIVEN a weather dashboard with form inputs
-WHEN I search for a city
-THEN I am presented with current and future conditions for that city and that city is added to the search history
-WHEN I view current weather conditions for that city
-THEN I am presented with the city name, the date, an icon representation of weather conditions, the temperature, the humidity, the wind speed, and the UV index
-WHEN I view the UV index
-THEN I am presented with a color that indicates whether the conditions are favorable, moderate, or severe
-WHEN I view future weather conditions for that city
-THEN I am presented with a 5-day forecast that displays the date, an icon representation of weather conditions, the temperature, the wind speed, and the humidity
-WHEN I click on a city in the search history
-THEN I am again presented with current and future conditions for that city
-*/
-
 var previousCities = localStorage.getItem("previousCities");
 var hasSearched = false;
 const SearchHistoryLimit = 11;
@@ -19,16 +5,14 @@ const apiKey = '233b06be3bdfee31043f3f96e5745593';
 
 if (previousCities != null) {
     var prevCityArr = JSON.parse(previousCities);
-    console.log(prevCityArr);
     renderSearchHistory();
 } else {
     var prevCityArr = [];
 }
 
 const searchButton = document.querySelector("#search-btn");
-const searchOnClick = function(event) {
+function searchOnClick(event) {
     hasSearched = true;
-    console.log("searchOnClick");
     event.preventDefault();
     let cityEl = document.querySelector("#city-search-input");
     let city = cityEl.value;
@@ -44,7 +28,6 @@ const searchOnClick = function(event) {
 }
 
 function renderSearchHistory() {
-    console.log("renderSearchHistory()");
     let historyEl = document.querySelector("#history-buttons");
     while(historyEl.firstChild){
         historyEl.removeChild(historyEl.firstChild);
@@ -75,7 +58,6 @@ function renderSearchHistory() {
 }
 
 function updateSearchHistory(city) {
-    console.log("updateSearchHistory()");
     // remove city from prevCityArr if it already exists
     let filteredCityArr = prevCityArr.filter(function(c) {return c !== city});
     prevCityArr = filteredCityArr;
@@ -87,7 +69,6 @@ function updateSearchHistory(city) {
     }
     localStorage.setItem("previousCities", JSON.stringify(prevCityArr));
     renderSearchHistory();
-    console.log(prevCityArr);
 }
 
 function capitalize(str) {
@@ -106,7 +87,6 @@ function capitalize(str) {
 }
 
 function getSearchResults(city) {
-    console.log("getSearchResults()");
     const requestUrl = 'https://api.openweathermap.org/data/2.5/weather?q='+ encodeURIComponent(city) + '&units=imperial&appid=' + apiKey;
     getWeatherApi(requestUrl, city);
 }
@@ -117,8 +97,6 @@ function getWeatherApi(requestUrl, city) {
             return response.json();
         })
         .then(function (data) {
-            console.log("data:");
-            console.log(data);
             let cityEl = document.querySelector("#city-search-input");
             // clear input field when search is clicked
             cityEl.value = '';
@@ -131,38 +109,36 @@ function getWeatherApi(requestUrl, city) {
                 getOneCallApi(data.coord.lat, data.coord.lon, city);
             } 
         })
-        // .catch(error => {
-        //     console.log("query failed");
-        // });
+        .catch(error => {
+            alert("weather query failed");
+        });
 }
 
 function getOneCallApi(lat, lon, city) {
-    console.log("lat: " + lat + " lon: " + lon);
     const requestURL = "https://api.openweathermap.org/data/2.5/onecall?lat=" + lat + "&lon=" + lon + "&exclude=minutely,hourly&units=imperial&appid=" + apiKey;
     fetch(requestURL)
     .then(function (response) {
         return response.json();
     })
-    .then(function (data) {
-        console.log("data:");
-        console.log(data);
+    .then(function (data) {;
         if (data.message != "wrong latitude" && data.message != "wrong longitude") {
             renderCurrentWeather(data, city);
         } else {
-            console.log(data.message);
+            alert(data.message);
         }
     })
-    // .catch(error => {
-    //     console.log("query failed");
-    // });
+    .catch(error => {
+        alert("One call query failed");
+    });
 }
 
 function renderCurrentWeather(weatherData, city) {
-    console.log("renderCurrentWeather()");
     const currentEl = document.querySelector("#current-card");
     currentEl.setAttribute("class", "card d-flex");
     const currentElbody = document.querySelector("#current-card-body");
+    const iconCode = weatherData.current.weather[0].icon;
     currentElbody.children[0].innerHTML = city + " " + moment().format("l");
+    currentElbody.children[0].innerHTML += `  <img src="http://openweathermap.org/img/wn/${iconCode}@2x.png" alt="Weather Icon">`;
     for (let i = 1; i < currentElbody.children.length; i++) {
         switch(i) {
             case 1:
@@ -191,17 +167,16 @@ function renderCurrentWeather(weatherData, city) {
 }
 
 function renderForecast(weatherData){
-    console.log("renderForecast()");
     const cardGroupEl = document.getElementById("forecast-cards");
-    console.log(weatherData);
+    while(cardGroupEl.firstChild){
+        cardGroupEl.removeChild(cardGroupEl.firstChild);
+    }
     for(let i=1; i < 6; i++) {
         const date = moment.unix(weatherData[i].dt).format("l");
         const iconCode = weatherData[i].weather[0].icon;
         const temp = weatherData[i].temp.day;
         const wind = weatherData[i].wind_speed;
         const humidity = weatherData[i].humidity;
-        console.log(weatherData[i]);
-
         const card = document.createElement("div");
         card.setAttribute("class", "card");
         card.innerHTML = 
@@ -210,12 +185,11 @@ function renderForecast(weatherData){
             <img src="http://openweathermap.org/img/wn/${iconCode}@2x.png" alt="Weather Icon">
             <p>Temp: ${temp}°F</p>
             <p>Wind: ${wind} mph</p>
-            <p>Humidity: ${humidity}5</p>
+            <p>Humidity: ${humidity}%</p>
         <div>`;
         cardGroupEl.appendChild(card);
     }
     
 }
-
 searchButton.addEventListener('click', searchOnClick);
 
