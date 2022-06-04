@@ -34,6 +34,7 @@ const searchOnClick = function(event) {
     let city = cityEl.value;
     // clear input field when search is clicked
     cityEl.value = '';
+    cityEl.setAttribute("placeholder", city);
     if (city == "") {
         alert("Please Enter a City");
         return;
@@ -41,7 +42,7 @@ const searchOnClick = function(event) {
    
     // standardize the capitalization of the city
     city = capitalize(city);
-    // getSearchResults(city);
+    getSearchResults(city);
     // save search history to local storage
     updateSearchHistory(city);
 }
@@ -66,8 +67,11 @@ function renderSearchHistory() {
         historyEl.appendChild(button);
         button.onclick = function () {
             let city = button.innerHTML;
+            let cityEl = document.querySelector("#city-search-input");
+            cityEl.value = '';
+            cityEl.setAttribute("placeholder", city);
+            getSearchResults(city);
             updateSearchHistory(city);
-            console.log(city);
         }
     }
 
@@ -107,6 +111,8 @@ function capitalize(str) {
 
 
 function getSearchResults(city) {
+    const currentEl = document.querySelector("#current-card");
+    currentEl.setAttribute("class", "card d-flex");
     console.log("getSearchResults()")
     const apiKey = '233b06be3bdfee31043f3f96e5745593';
     var requestUrl = 'https://api.openweathermap.org/data/2.5/weather?q='+ encodeURIComponent(city) + '&units=imperial&appid=' + apiKey;
@@ -136,6 +142,7 @@ function getWeatherApi(requestUrl) {
 
 function renderSearchDatatoPage() {
     console.log("renderSearchDatatoPage()");
+    const currentElbody = document.querySelector("#current-card-body");
 }
 
 searchButton.addEventListener('click', searchOnClick);
