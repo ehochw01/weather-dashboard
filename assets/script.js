@@ -13,7 +13,8 @@ THEN I am again presented with current and future conditions for that city
 */
 
 var previousCities = localStorage.getItem("previousCities");
-const SearchHistoryLimit = 10;
+var hasSearched = false;
+const SearchHistoryLimit = 11;
 
 if (previousCities != null) {
     var prevCityArr = JSON.parse(previousCities);
@@ -26,6 +27,7 @@ if (previousCities != null) {
 const searchButton = document.querySelector("#search-btn");
 var weatherData = {};
 const searchOnClick = function(event) {
+    hasSearched = true;
     console.log("searchOnClick");
     event.preventDefault();
     let cityEl = document.querySelector("#city-search-input");
@@ -50,7 +52,13 @@ function renderSearchHistory() {
     while(historyEl.firstChild){
         historyEl.removeChild(historyEl.firstChild);
     }
-    for (let i = prevCityArr.length - 1; i >= 0; i--) {
+    if (hasSearched) {
+        indexDisplay =  prevCityArr.length - 2;
+    } else {
+        indexDisplay =  prevCityArr.length - 1;
+    }
+
+    for (let i = indexDisplay; i >= 0; i--) {
         let button = document.createElement('button');
         button.setAttribute("class", "btn btn-secondary btn-block");
         button.setAttribute("type", "button");
