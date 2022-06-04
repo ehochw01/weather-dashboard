@@ -105,8 +105,6 @@ function capitalize(str) {
     return stringArray.join("");
 }
 
-
-
 function getSearchResults(city) {
     console.log("getSearchResults()");
     const requestUrl = 'https://api.openweathermap.org/data/2.5/weather?q='+ encodeURIComponent(city) + '&units=imperial&appid=' + apiKey;
@@ -189,10 +187,34 @@ function renderCurrentWeather(weatherData, city) {
     }
     uviEl = document.getElementById("uv-index");
     uviEl.innerHTML = `UV Index: <span class="badge ${color}">${uvi}</span>`;
+    renderForecast(weatherData.daily)
 }
 
 function renderForecast(weatherData){
     console.log("renderForecast()");
+    const cardGroupEl = document.getElementById("forecast-cards");
+    console.log(weatherData);
+    for(let i=1; i < 6; i++) {
+        const date = moment.unix(weatherData[i].dt).format("l");
+        const iconCode = weatherData[i].weather[0].icon;
+        const temp = weatherData[i].temp.day;
+        const wind = weatherData[i].wind_speed;
+        const humidity = weatherData[i].humidity;
+        console.log(weatherData[i]);
+
+        const card = document.createElement("div");
+        card.setAttribute("class", "card");
+        card.innerHTML = 
+        `<div class="card-body">
+            <h4 class="card-title">${date}</h4>
+            <img src="http://openweathermap.org/img/wn/${iconCode}@2x.png" alt="Weather Icon">
+            <p>Temp: ${temp}°F</p>
+            <p>Wind: ${wind} mph</p>
+            <p>Humidity: ${humidity}5</p>
+        <div>`;
+        cardGroupEl.appendChild(card);
+    }
+    
 }
 
 searchButton.addEventListener('click', searchOnClick);
