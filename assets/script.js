@@ -176,6 +176,17 @@ function renderSearchDatatoPage(weatherData, city) {
                 break;
         }
     }
+    let uvi = weatherData.current.uvi;
+    let color = "badge-light";
+    if (uvi <= 3) {
+        color = "badge-success";
+    } else if (uvi <= 7) {
+        color = "badge-warning";
+    } else {
+        color = "badge-warning";
+    }
+    uviEl = document.getElementById("uv-index");
+    uviEl.innerHTML = `UV Index: <span class="badge ${color}">${uvi}</span>`;
 }
 
 searchButton.addEventListener('click', searchOnClick);
